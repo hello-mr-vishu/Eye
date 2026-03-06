@@ -33,15 +33,41 @@ if models_loaded:
     # --- USER INTERFACE ---
     disease_choice = st.radio(
         "Which condition would you like to screen for?",
-        ("Anemia (Upload Conjunctiva Image)", "Jaundice (Upload Sclera Image)")
+        ("Anemia (Conjunctiva Image)", "Jaundice (Sclera Image)")
     )
 
-    uploaded_file = st.file_uploader("Upload an image of the eye (JPG/PNG)", type=["jpg", "jpeg", "png"])
+    st.subheader("Choose Image Source")
+    image_source = st.radio("How would you like to provide the image?", ("Upload an image", "Use a sample image"), horizontal=True)
+    
+    image = None
 
-    if uploaded_file is not None:
-        # Display the uploaded image
-        image = Image.open(uploaded_file).convert('RGB') # Convert to RGB to handle PNG alpha channels safely
-        st.image(image, caption="Uploaded Eye Image", width=350)
+    if image_source == "Upload an image":
+        uploaded_file = st.file_uploader("Upload an image of the eye (JPG/PNG)", type=["jpg", "jpeg", "png"])
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file).convert('RGB')
+    else:
+        if "Anemia" in disease_choice:
+            sample_options = {
+                "Sample 1": "Dataset_Anemia/dataset anemia/India/1/20200118_164733.jpg",
+                "Sample 2": "Dataset_Anemia/dataset anemia/India/1/20200118_164733_forniceal.png",
+                "Sample 3": "Dataset_Anemia/dataset anemia/India/1/20200118_164733_palpebral.png"
+            }
+        else:
+            sample_options = {
+                "Sample 1": "Dataset_Jaundice/train/images/-jaundice-medicalshort_mp4-0000_jpg.rf.22f14a3a8913a83cfd9de327f949beb4.jpg",
+                "Sample 2": "Dataset_Jaundice/train/images/-jaundice-medicalshort_mp4-0004_jpg.rf.2cf303cd27dec507e5d5612bff0fed72.jpg",
+                "Sample 3": "Dataset_Jaundice/train/images/-jaundice-medicalshort_mp4-0005_jpg.rf.92c2f6329f19b44c8787b59aa852fe65.jpg"
+            }
+            
+        selected_sample = st.selectbox("Select a sample image", list(sample_options.keys()))
+        try:
+            image = Image.open(sample_options[selected_sample]).convert('RGB')
+        except Exception as e:
+            st.error(f"Could not load sample image: {e}")
+
+    if image is not None:
+        # Display the uploaded/selected image
+        st.image(image, caption="Eye Image for Analysis", width=350)
         
         if st.button("Run AI Diagnostic", type="primary"):
             with st.spinner('Analyzing image architecture...'):
