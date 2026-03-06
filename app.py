@@ -49,8 +49,8 @@ if models_loaded:
         if "Anemia" in disease_choice:
             sample_options = {
                 "Sample 1": "Dataset_Anemia/dataset anemia/India/1/20200118_164733.jpg",
-                "Sample 2": "Dataset_Anemia/dataset anemia/India/1/20200118_164733_forniceal.png",
-                "Sample 3": "Dataset_Anemia/dataset anemia/India/1/20200118_164733_palpebral.png"
+                "Sample 2": "Dataset_Anemia/dataset anemia/India/10/20200201_114324.jpg",
+                "Sample 3": "Dataset_Anemia/dataset anemia/India/11/20200203_094523.jpg"
             }
         else:
             sample_options = {
@@ -75,7 +75,9 @@ if models_loaded:
                 # --- PREPROCESSING ---
                 # Resize and normalize to match our ResNet50 training pipeline
                 img_resized = image.resize((224, 224))
-                img_array = np.array(img_resized) / 255.0
+                img_array = np.array(img_resized)
+                # ResNet50 requires a specific preprocessing function, not just / 255.0
+                img_array = tf.keras.applications.resnet50.preprocess_input(img_array)
                 img_array = np.expand_dims(img_array, axis=0) # Add batch dimension: shape becomes (1, 224, 224, 3)
                 
                 # --- PREDICTION ---
